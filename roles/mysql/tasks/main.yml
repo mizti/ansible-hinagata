@@ -1,0 +1,49 @@
+---
+- name: Ubuntu MySQLのインストール実行
+  apt: name={{item}} state=installed
+  with_items:
+    - python-mysqldb
+    - mysql-server
+  register: apt_install_mysql
+  until: apt_install_mysql|success
+  retries: 3
+  delay: 30
+  sudo: true
+  tags: mysql
+  when: ansible_distribution == 'Ubuntu'
+
+- name: my.confの設定変更
+  template: src=my.cnf dest=/etc/mysql/my.cnf owner=root mode=0600
+  sudo: true
+  tags: mysql
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Ubuntu MySQLの実行および起動パラメータの設定
+  service: name=mysql state=started enabled=yes
+  sudo: true
+  tags: mysql
+  when: ansible_distribution == 'Ubuntu'
+
+# TBD: rootアクセス元の制限
+- name: MySQLのrootパスワードと権限設定
+  mysql_user: name=root host={{item}} password={{mysql_root_password}} priv=*.*:ALL,GRANT append_privs=yes
+  with_items:
+    - "%"
+    - localhost
+  sudo: true
+  tags: mysql
+
+- name: ansibleでのDB接続用コンフィグファイルの配置
+  template: src=ansible_database.conf dest=~/.my.cnf owner=root mode=0600
+  sudo: true
+  tags: mysql
+
+- name: MySQLの再起動
+  service: name=mysql state=restarted
+  sudo: true
+  when: include_mysql == "true"
+
+- name: MySQLの停止
+  service: name=mysql state=restarted
+  sudo: true
+  when: include_mysql == "false"

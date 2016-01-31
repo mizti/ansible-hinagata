@@ -1,0 +1,29 @@
+---
+- name: update and upgrade packages
+  apt: upgrade=yes update_cache=yes #開発中はupgrade=distでもいいかも
+  register: apt_update_apgrade
+  until: apt_update_apgrade|success
+  retries: 3
+  delay: 900
+  when: upgrade_packages== "true"
+  tags: common_pkg
+
+- name: install common packages
+  apt: name={{item}} state=present
+  with_items:
+    - curl
+    - ntp
+    - git
+    - python2.7
+    - python2.7-dev
+    - python-pip
+    - python-pycurl
+    - python-httplib2
+    - unzip
+    - zsh
+    - gdebi
+  register: apt_install_common_package
+  until: apt_install_common_package|success
+  retries: 3
+  delay: 90
+  tags: common_pkg

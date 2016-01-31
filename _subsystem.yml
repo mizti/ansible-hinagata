@@ -1,0 +1,6 @@
+---
+- name: 'subsystem'
+  hosts: 'subsystem-hosts'
+  roles:
+    - 'common'
+    - 'somesystem'

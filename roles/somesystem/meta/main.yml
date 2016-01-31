@@ -1,0 +1,9 @@
+---
+dependencies:
+  - role: openstack-common
+  - role: mysql
+    #when: include_mysql == "true" # install 自体は常にすることに
+    # 変数渡し
+    mysql:
+      user: "{{some.user}}"
+      password: "{{some.password}}"

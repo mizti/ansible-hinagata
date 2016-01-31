@@ -1,0 +1,12 @@
+---
+- name: set /etc/localtime
+  file: src=/usr/share/zoneinfo/UTC dest=/etc/localtime owner=root group=root mode=0644
+  tags: timezone
+
+- name: Set timezone variables
+  copy: content='UTC\n' dest=/etc/timezone backup=yes owner=root group=root mode=0644
+  tags: timezone
+
+- name: update tzdata
+  command: /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
+  tags: timezone

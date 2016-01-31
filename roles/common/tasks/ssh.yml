@@ -1,0 +1,29 @@
+---
+# add ssh key to user.
+- name: create .ssh directory
+  file: dest={{ansible_env.HOME}}/.ssh state=directory owner={{ansible_env.USER}}
+
+- name: copy local id_rsa.jenkins to remote
+  copy: src=~/.ssh/id_rsa.jenkins dest={{ansible_env.HOME}}/.ssh/id_rsa.jenkins mode=0600 owner={{ansible_env.USER}} group={{ansible_env.USER}}
+
+- name: copy configration file
+  copy: src=ssh_config dest={{ansible_env.HOME}}/.ssh/config mode=0644 owner={{ansible_env.USER}} group={{ansible_env.USER}}
+
+#- name: get authorized_keys from github:big-tamac
+#  get_url: url="https://github.com/big-tamac.keys" dest={{ansible_env.HOME}}/.ssh/authorized_keys mode=0600 owner={{ansible_env.USER}} group={{ansible_env.USER}}
+#  register: get_url_download_authorized_keys
+#  until: get_url_download_authorized_keys|success
+#  retries: 3
+#  delay: 30
+
+- name: create .ssh directory
+  file: dest=/root/.ssh state=directory
+  sudo: true
+
+- name: copy local id_rsa.jenkins to remote
+  copy: src=~/.ssh/id_rsa.jenkins dest=/root/.ssh/id_rsa.jenkins mode=0600
+  sudo: true
+
+- name: copy configration file (base)
+  copy: src=ssh_config dest=/root/.ssh/config mode=0644
+  sudo: true

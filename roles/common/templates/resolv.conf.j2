@@ -1,0 +1,6 @@
+{% for server in dns.servers %}
+nameserver {{server}}
+{% endfor %}
+{% for server in dns.search %}
+search {{dns.search}}
+{% endfor %}

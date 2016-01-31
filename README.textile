@@ -1,0 +1,411 @@
+h1. [system name] Ansible Playbook
+
+h2. 概要
+
+[system name]サーバを構築するための専用Ansible Playbookです。
+また、試験環境用にmysqlサーバを構築することもできます。
+
+* [system name]
+* mysql
+
+h2. ansible-server側環境準備
+
+* ansible実行ホスト
+** CentOS 6
+** python 2.7.10 (pyenvによりインストール)
+** Ruby(rbenv環境）
+** ssh_user:ansible-user
+*** ansible-userはNOPASSでsudo権限を持っていること
+
+h3. 依存パッケージのyumインストール
+
+<pre>
+ # yum install gcc gcc-c++ make git openssl-devel bzip2-devel zlib-devel readline-devel sqlite-devel patch python-devel
+</pre>
+
+h3. ansible実行用ユーザの作成
+
+<pre>
+ # adduser ansible-user
+ # passwd ansible-user
+</pre>
+
+このユーザがsudoになれるようにwheelグループに追加する
+
+<pre>
+ # usermod -G wheel ansible-user
+</pre>
+
+wheelにsudo権限を与える.
+
+<pre>
+ # visudo
+ ## Allows people in group wheel to run all commands
+ # %wheel        ALL=(ALL)       ALL
+ %wheel  ALL=(ALL)       ALL
+</pre>
+
+
+以下の作業はこのユーザで実行する
+
+<pre>
+# su ansible-user
+</pre>
+
+h3. pipのインストール
+
+<pre>
+$ sudo yum install python-setuptools python-setuptools-devel
+$ sudo easy_install pip
+</pre>
+
+h3. pyenvのインストール
+
+<pre>
+$ git clone git://github.com/yyuu/pyenv.git ~/.pyenv
+</pre>
+
+以下で.bashrcに追記し、読み込まれるようにしておく
+
+<pre>
+echo 'export PYENV_ROOT="${HOME}/.pyenv"' >> ~/.bashrc
+echo 'if [ -d "${PYENV_ROOT}" ]; then' >> ~/.bashrc
+echo '    export PATH=${PYENV_ROOT}/bin:$PATH' >> ~/.bashrc
+echo '    export PATH=${PYENV_ROOT}/shims:$PATH' >> ~/.bashrc
+echo '    eval "$(pyenv init -)"' >> ~/.bashrc
+echo 'fi' >> ~/.bashrc
+</pre>
+
+※ pipを、~/.pyenv/bin/shims/pip を使うためにはPATH=${PYENV_ROOT}/shimsも足しておく必要がある
+
+その場でも読み込む
+
+<pre>
+$ source ~/.bashrc
+</pre>
+
+pyenv-virtualenvもインストールする
+
+<pre>
+cd ~/.pyenv/plugins
+git clone git://github.com/yyuu/pyenv-virtualenv.git
+</pre>
+
+一度何かをpyenvでインストールする
+
+<pre>
+pyenv install 2.7.10
+</pre>
+
+pipのパスを確認する
+
+<pre>
+$ which pip
+~/.pyenv/shims/pip
+</pre>
+
+※ /usr/bin/pip となっていたら×
+
+h3. sshの設定
+
+アクセスするための権限設定を行う。
+
+githubのtamac-ioにアクセスできる秘密鍵(e.g. id_rsa.jenkins)を配置する.
+
+<pre>
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+cd ~/.ssh
+(鍵を配置)
+$ ls
+id_rsa.jenkins  known_hosts
+$ chmod 600 id_rsa.jenkins
+</pre
+
+また、ansible-userの鍵を配置する
+
+<pre>
+$ pwd
+/home/ansible-user/.ssh
+(鍵を配置)
+$ chmod 600 id_rsa.ansible-user
+</pre>
+
+sshのconfigを配置。githubへのアクセスと、構築対象サーバ(e.g. 153.128.29.165)への鍵設定を行う。
+
+<pre>
+Host github.com
+  HostName github.com
+  User git
+  Port 22
+  IdentityFile ~/.ssh/id_rsa.jenkins
+  TCPKeepAlive yes
+  IdentitiesOnly yes
+
+Host 153.128.29.165
+  IdentityFile ~/.ssh/id_rsa.ansible-user
+  User ansible-user
+</pre>
+
+※ 153.128.29.165の部分はansible作業の対象サーバのIP。各サーバ毎に記載。
+
+パーミッションを変更する
+
+<pre>
+$ chmod 600 ~/.ssh/config
+</pre>
+
+アクセスできることを確認
+
+<pre>
+$ ssh git@github.com
+PTY allocation request failed on channel 0
+Hi ********! You've successfully authenticated, but GitHub does not provide shell access.
+                          Connection to github.com closed.
+</pre>
+
+h3. 本リポジトリのダウンロード
+
+リポジトリをダウンロードする
+
+<pre>
+$ cd ~
+$ pwd
+/home/ansible-user
+$ git clone git@github.com:tamac-io/[system]-ansible.git
+</pre>
+
+
+h3. ansible実行環境の準備
+
+pyenv + virtualenvを使用して[system]-ansible専用環境を作る場合(推奨)
+
+※ もし落としてきたリポジトリや/home/anbile-user内に.python-versionが存在している場合、
+権限エラー（Permission denied）でpip installが失敗するので削除して下記行程を行う。
+
+<pre>
+cd ~/[system]-ansible
+pyenv install 2.7.10                    # 必ずpyenvでインストールする
+pyenv virtualenv 2.7.10 [system]-ansible
+pyenv local [system]-ansible
+</pre>
+
+pip実行前の確認
+
+<pre>
+$ pyenv versions
+  system
+  2.7.10
+* [system]-ansible (set by /home/ansible-user/[system]-ansible/.python-version)
+
+$ which pip
+~/.pyenv/shims/pip
+</pre>
+
+<pre>
+$ pyenv exec pip install -r requirements.txt
+$ pyenv rehash
+</pre>
+
+（非推奨）上記が不可の場合、system pythonを使用する場合(サーバ全体で同じパッケージを利用してしまうため非推奨)
+
+<pre>
+pip install -r requirements.txt
+</pre>
+
+
+h3. (必要なら)デプロイ後のログイン用ユーザ秘密鍵の用意
+
+* userがデプロイ時に設定する公開鍵のペアとなる秘密鍵を、ansible実行ユーザの.ssh配下にid_rsa.userとして配置すること
+** ~/.ssh/id_rsa.user
+
+h3. サブモジュールのダウンロード
+
+下記手順で、リポジトリの外部依存モジュールをダウンロードする
+<pre>
+$ cd ~/[system]-ansible
+$ git submodule init
+$ git submodule update
+</pre>
+
+もし依存性解決できない場合は
+
+<pre>
+$ git submodule add https://github.com/openstack-ansible/openstack-ansible-modules.git {作成するディレクトリ名}
+</pre>
+
+でsubmodule定義をやり直す（原則要らないはず）
+
+h2. 構築対象サーバ準備
+
+h3. 各構築対象サーバの作業概要
+
+・公開鍵を配置し、sshでNOPASSで疎通出来る状態にしておく
+・NOPASSでsudoできるように設定しておくこと
+・必要であれば、%wheelもNOPASSでsudoできるようにしておく(原則不要)
+
+以下の実行例は、以下のコンポーネントにIPアドレスが割り当てられている前提。
+10.0.0.10: openstack-[system]
+10.0.0.11: mysql
+
+なお、以下の「確認作業」より前の部分については、当repositoryの
+preset.shを実行することで自動的に実施することができる。
+
+h3. 対象サーバにログインする
+
+root権限ユーザとしてログインする
+
+h3. ansible-userを作成する
+
+<pre>
+ # adduser ansible-user
+</pre>
+
+h3. ansible-userのsudo設定を行う
+
+下記行をsudoersにvisudoで最終行に追加
+
+<pre>
+ # /bin/echo "ansible-user    ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
+</pre>
+
+
+h3. ansible-userのssh設定を行う
+
+<pre>
+/bin/mkdir /home/ansible-user/.ssh
+/bin/chmod 700 /home/ansible-user/.ssh
+/bin/cat > /home/ansible-user/.ssh/authorized_keys << EOF
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxKvPEOfH0O7rYABLpso1HCY/MteflLwCfh9NO1XarIvzkCWmU2sINqiAEZY8wOMfmbyRj72x7U1m60ke+0sV+UD+spOk9XdQvqz4fBQSfD2Sk8keSfjX8q9hbeVvXMobcaEX4x28UfUmoqVRolYAOZ8YFPMjqqTP5lJ5rjGMwiqekIWlZaeJzYGmsIM+E523LK1g8P4cK+CWRJAHRNfFiCZhcNlKoWWF65QokafvnE6kr0N4182gEvYq9CMvJFP0MoFoC0jtcDCyA9VvQx0HEmyqzwncRNhGR6ZKXnlPfEEY1V7PQgwNaqW+VC1IYCwaRZSHqbUTvZK9NsRorBCR7w== devuser@portal-ansible
+EOF
+/bin/chmod 600 /home/ansible-user/.ssh/authorized_keys
+/bin/chown -R ansible-user.ansible-user /home/ansible-user/.ssh
+</pre>
+
+h3. 確認作業
+
+* ansibleサーバからのログインを確認。
+
+<pre>
+ssh ansible-user@10.0.0.10 -i ~/.ssh/id_rsa.ansible-user
+ssh 10.0.0.10 -i ~/.ssh/id_rsa.ansible-user
+</pre>
+
+でログインできることを確認する
+
+* sudoの確認
+
+<pre>
+ansible-user$ sudo -s
+</pre>
+パスワード無しでsudoになれることを確認する
+
+h2. 構築実行前準備（ansible-server側）
+
+h3. インベントリファイルの修正
+
+[system], mysqlを構築するホストをhosts_samplesからコピーする
+(もしくは編集する)
+
+<pre>
+cp hosts_samples/<環境名> hosts
+</pre>
+
+
+hostsファイル内のフラグ設定は下記のようになっています。
+指定の方法によっては既存のデータを吹き飛ばすため、確認の上実行してください
+
+# include_mysql="true": mysqlをローカルにインストールする
+# include_rabbitmq="true": rabbitmqをローカルにインストールする
+# ansible_ssh_user=ansible-user: 構築に利用するログイン用ユーザ名を指定する
+# upgrade_packages="true": packageのupgradeを行う
+# include_testdata="true": testdataの投入を行う
+
+
+h3. group_varsの修正
+
+* 各環境固有の情報の設定
+
+<pre>
+vi group_vars/all
+</pre>
+で作成するか
+<pre>
+cp group_vars/{対象の環境} group_vars/all
+</pre>
+
+h3. playbookのチェック
+
+<pre>
+ansible-playbook -i hosts site.yml --syntax-check
+ansible-playbook -i hosts site.yml --list-tasks
+</pre>
+
+
+h2. 構築実行
+
+h3. 対象環境のコンポーネント一つに対してレシピを適用する場合
+
+<pre>
+$ ansible-playbook -i hosts _<component_name>.yml
+</pre>
+
+
+h3. 対象環境のコンポーネント全てに対してレシピを適用する場合
+
+<pre>
+$ ansible-playbook -i hosts site.yml
+</pre>
+※ site.ymlは全てのコンポーネントのPlaybookを内包しているため、これを指定する。
+
+h2. テストの実行
+
+h3. テスト実行環境の構築
+
+* rbenv環境の構築
+
+<pre>
+$ git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
+$ echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
+$ echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+$ exec $SHELL -l
+$ git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
+</pre>
+
+* Rubyのインストール
+
+<pre>
+$ rbenv install -v 2.2.3 #2系最新
+$ rbenv rehash
+$ rbenv local 2.2.3
+$ ruby version
+(set by current directory/.ruby-versionになっていることを確認)
+</pre>
+
+* bundlerのインストール
+
+<pre>
+$ rbenv exec gem install bundler
+$ rbenv rehash
+</pre>
+
+* 必要ライブラリのbundle install
+
+<pre>
+$ bundle install --path vendor/bundle
+</pre>
+
+h3. serverspecでの構築後の試験方法
+
+serverspecのテスト項目は、hostsファイル内に記述されている情報を元に自動生成される。
+
+* 実行可能なテストの一覧
+<pre>
+$ bundle exec rake -T
+</pre>
+
+* テストの実行
+<pre>
+$ bundle exec rake -T
+rake serverspec:openstack-[system]
+</pre>

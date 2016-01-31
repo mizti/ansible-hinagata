@@ -1,0 +1,10 @@
+hosts
+group_vars/all
+group_vars/prod*
+vendor
+.bundle
+Gemfile.back
+Gemfile.lock
+Rakefile
+.ruby-version
+.python-version

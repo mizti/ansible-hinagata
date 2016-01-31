@@ -1,0 +1,18 @@
+---
+ruby:
+  package: ruby2.1
+apt:
+  repo_url: http://jp.archive.ubuntu.com
+#gem:
+#  source_url: http://some-repo.net/
+dns:
+  servers:
+    - 8.8.8.8
+  search:
+    - someurl.com
+
+upgrade_packages: "false"
+
+logs:
+- name: logs
+  path: "/var/log/*.log"

@@ -1,0 +1,9 @@
+ethtool==0.6
+iniparse==0.3.1
+iwlib==1.0
+ordereddict==1.2
+pycurl==7.19.0
+pygpgme==0.1
+python-dmidecode==3.10.13
+urlgrabber==3.9.1
+yum-metadata-parser==1.1.2

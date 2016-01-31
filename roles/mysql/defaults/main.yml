@@ -1,0 +1,24 @@
+---
+mysql_root_password: root
+mysql_host:
+  bind_address:      0.0.0.0 # 反映されない? TODO:確認
+  port:              3306
+
+long_query_time: 1
+
+log_format: '/\(?<time>[^\s]*)\.\d* \#\d*\ (?<level>[A-Z]*) -- : (?<message>.*)/'
+log_time_format: '%Y%m%dT %H:%M:%S'
+
+logfiles:
+  - name: mysql
+    path: '/var/log/mysql.log'
+    format: '{{log_format}}'
+    time_format: '{{log_time_format}}'
+  - name: mysql_error
+    path: '/var/log/mysql/error.log'
+    format: '{{log_format}}'
+    time_format: '{{log_time_format}}'
+  - name: mysql_slow_query_log
+    path: '/var/log/mysql/slow-query.log'
+    format: '/(?<message>.*)/'
+    time_format: ''

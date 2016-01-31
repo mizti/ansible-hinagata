@@ -1,0 +1,6 @@
+---
+- name: configure rsyslog log format
+  copy: src=rsyslog.conf dest=/etc/rsyslog.conf owner=root group=root mode=0644
+
+- name: restart rsyslogd
+  service: name=rsyslog state=restarted

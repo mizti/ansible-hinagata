@@ -1,0 +1,3 @@
+---
+- name: setup locale
+  command: update-locale LC_ALL=en_US.UTF-8 && locale-gen en_US.UTF-8 && /usr/sbin/update-locale LANG=en_US.UTF-8

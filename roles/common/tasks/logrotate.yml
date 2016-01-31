@@ -1,0 +1,21 @@
+---
+- name: remove original config
+  file: path=/etc/logrotate.d/somesystem state=absent owner=root group=root
+  tags: logrotate
+  sudo: true
+
+- name: create logrotate config directory
+  file: path=/etc/logrotate.d/somesystem state=directory owner=root group=root
+  tags: logrotate
+  sudo: true
+
+- name: set logrotate.conf
+  template: src=logrotate.conf dest=/etc/logrotate.conf mode=0644
+  tags: logrotate
+  sudo: true
+
+- name: set log file rotation
+  template: src=logrotate.j2 dest=/etc/logrotate.d/somesystem/{{item.name}} mode=0644
+  with_items: logs
+  tags: logrotate
+  sudo: true

@@ -1,0 +1,8 @@
+---
+# TODO: fluentdによるログ収集。一旦省略
+#dependencies:
+#  - role: fluentd
+#    allow_duplicates: true
+#    middlewarelog_files: "{{logfiles}}"
+#    is_install_fluentd_client: true
+#    service_name: mysql

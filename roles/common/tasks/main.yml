@@ -1,0 +1,55 @@
+---
+- include: locale.yml
+  sudo: true
+  tags:
+    - common
+    - setup_locale
+
+- include: timezone.yml
+  sudo: true
+  tags:
+    - timezone
+
+- include: dns.yml
+  sudo: true
+  tags: 
+    - common
+    - dns
+
+- include: ssh.yml
+  sudo: true
+  tags:
+    - common
+    - ssh
+
+- include: apt.yml
+  sudo: true
+  tags:
+    - common
+    - apt
+
+- include: common_pkg.yml
+  sudo: true
+  tags:
+    - common
+    - common_pkg
+
+- include: pip.yml
+  sudo: true
+  tags:
+    - common
+    - apt
+
+- include: common_pkg.yml
+
+- include: rsyslog.yml
+  sudo: true
+  tags: rsyslog
+
+- include: ntp.yml
+  sudo: true
+  tags: ntp
+
+- include: logrotate.yml
+  sudo: true
+  tags: logrotate

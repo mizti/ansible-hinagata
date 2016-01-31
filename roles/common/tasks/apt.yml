@@ -1,0 +1,7 @@
+---
+- name: Ubuntu aptのリポジトリ設定変更
+  template: src=sources.list dest=/etc/apt/sources.list owner=root group=root mode=0644
+  sudo: true
+
+- name: aptリストの更新
+  apt: update_cache=yes

@@ -1,0 +1,6 @@
+---
+- name: set configration file for ntp
+  template: src=ntp.conf.j2 dest=/etc/ntp.conf owner=root group=root mode=0644
+
+- name: restart ntp
+  service: name=ntp state=restarted

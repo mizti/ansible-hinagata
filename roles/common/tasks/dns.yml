@@ -1,0 +1,6 @@
+---
+- name: set configration file for resolvconf
+  template: src=resolv.conf.j2 dest=/etc/resolvconf/resolv.conf.d/base
+
+- name: update resolvconf
+  command: resolvconf -u
