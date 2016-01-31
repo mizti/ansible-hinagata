@@ -276,7 +276,7 @@ h3. ansible-userのssh設定を行う
 /bin/mkdir /home/ansible-user/.ssh
 /bin/chmod 700 /home/ansible-user/.ssh
 /bin/cat > /home/ansible-user/.ssh/authorized_keys << EOF
-ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxKvPEOfH0O7rYABLpso1HCY/MteflLwCfh9NO1XarIvzkCWmU2sINqiAEZY8wOMfmbyRj72x7U1m60ke+0sV+UD+spOk9XdQvqz4fBQSfD2Sk8keSfjX8q9hbeVvXMobcaEX4x28UfUmoqVRolYAOZ8YFPMjqqTP5lJ5rjGMwiqekIWlZaeJzYGmsIM+E523LK1g8P4cK+CWRJAHRNfFiCZhcNlKoWWF65QokafvnE6kr0N4182gEvYq9CMvJFP0MoFoC0jtcDCyA9VvQx0HEmyqzwncRNhGR6ZKXnlPfEEY1V7PQgwNaqW+VC1IYCwaRZSHqbUTvZK9NsRorBCR7w== devuser@portal-ansible
+ssh-rsa ****
 EOF
 /bin/chmod 600 /home/ansible-user/.ssh/authorized_keys
 /bin/chown -R ansible-user.ansible-user /home/ansible-user/.ssh
