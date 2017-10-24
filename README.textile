@@ -131,7 +131,7 @@ $ pwd
 $ chmod 600 id_rsa.ansible-user
 </pre>
 
-sshのconfigを配置。githubへのアクセスと、構築対象サーバ(e.g. 153.128.29.165)への鍵設定を行う。
+sshのconfigを配置。githubへのアクセスと、構築対象サーバ(e.g. 19.18.17.16)への鍵設定を行う。
 
 <pre>
 Host github.com
@@ -142,12 +142,12 @@ Host github.com
   TCPKeepAlive yes
   IdentitiesOnly yes
 
-Host 153.128.29.165
+Host 19.18.17.16
   IdentityFile ~/.ssh/id_rsa.ansible-user
   User ansible-user
 </pre>
 
-※ 153.128.29.165の部分はansible作業の対象サーバのIP。各サーバ毎に記載。
+※ 19.18.17.16の部分はansible作業の対象サーバのIP。各サーバ毎に記載。
 
 パーミッションを変更する
 
@@ -393,19 +393,4 @@ $ rbenv rehash
 
 <pre>
 $ bundle install --path vendor/bundle
-</pre>
-
-h3. serverspecでの構築後の試験方法
-
-serverspecのテスト項目は、hostsファイル内に記述されている情報を元に自動生成される。
-
-* 実行可能なテストの一覧
-<pre>
-$ bundle exec rake -T
-</pre>
-
-* テストの実行
-<pre>
-$ bundle exec rake -T
-rake serverspec:openstack-[system]
 </pre>
