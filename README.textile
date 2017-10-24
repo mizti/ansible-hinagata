@@ -12,7 +12,7 @@ h2. ansible-server側環境準備
 
 * ansible実行ホスト
 ** CentOS 6
-** python 2.7.10 (pyenvによりインストール)
+** python 2.7.12 (pyenvによりインストール)
 ** Ruby(rbenv環境）
 ** ssh_user:ansible-user
 *** ansible-userはNOPASSでsudo権限を持っていること
@@ -94,7 +94,7 @@ git clone git://github.com/yyuu/pyenv-virtualenv.git
 一度何かをpyenvでインストールする
 
 <pre>
-pyenv install 2.7.10
+pyenv install 2.7.12
 </pre>
 
 pipのパスを確認する
@@ -185,8 +185,8 @@ pyenv + virtualenvを使用して[system]-ansible専用環境を作る場合(推
 
 <pre>
 cd ~/[system]-ansible
-pyenv install 2.7.10                    # 必ずpyenvでインストールする
-pyenv virtualenv 2.7.10 [system]-ansible
+pyenv install 2.7.12                    # 必ずpyenvでインストールする
+pyenv virtualenv 2.7.12 [system]-ansible
 pyenv local [system]-ansible
 </pre>
 
@@ -195,24 +195,18 @@ pip実行前の確認
 <pre>
 $ pyenv versions
   system
-  2.7.10
+  2.7.12
 * [system]-ansible (set by /home/ansible-user/[system]-ansible/.python-version)
 
 $ which pip
 ~/.pyenv/shims/pip
 </pre>
 
+pyenv versionsで[system]-ansible されることが確認できたディレクトリで
 <pre>
-$ pyenv exec pip install -r requirements.txt
+$ pip install -r requirements.txt
 $ pyenv rehash
 </pre>
-
-（非推奨）上記が不可の場合、system pythonを使用する場合(サーバ全体で同じパッケージを利用してしまうため非推奨)
-
-<pre>
-pip install -r requirements.txt
-</pre>
-
 
 h3. (必要なら)デプロイ後のログイン用ユーザ秘密鍵の用意
 
